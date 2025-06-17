@@ -128,22 +128,19 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 
 const SolutionSchema = new mongoose.Schema({
-  id: { type: String, required: true },
   title: String,
   solution: String,
   submittedBy: String,
   submittedAt: String,
-}, { _id: false }); 
-
+});
 
 const BountySchema = new mongoose.Schema({
-  id: { type: String, required: true },
   title: String,
   description: String,
   price: Number,
   submittedBy: String,
   submittedAt: String,
-  solutions: [SolutionSchema]
+  solutions: [SolutionSchema],
 });
 
 const Bounty = mongoose.model('Bounty', BountySchema);
@@ -152,56 +149,58 @@ const Bounty = mongoose.model('Bounty', BountySchema);
 app.post('/question', async (req, res) => {
   try {
     const { title, description, price, submittedBy } = req.body;
-     const bountyPrice = price;
-     const resource = `${req.protocol}://${req.headers.host}${req.originalUrl}` as Resource;
-  const paymentRequirements = [
-    createExactPaymentRequirements(
-      price, 
-      "base-sepolia",
-      resource,
-      "A bounty for solving a challenge",
-    ),
-  ];
-  console.log("verifying payment");
-  const isValid = await verifyPayment(req, res, paymentRequirements);
- console.log("✅ Payment valid?", isValid);
- if (!isValid) return;
- const settleResponse = await settle(
-      exact.evm.decodePayment(req.header("X-PAYMENT")!),
-      paymentRequirements[0],
-    );
-    const responseHeader = settleResponseHeader(settleResponse);
-    res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
-  
+    // const resource = `${req.protocol}://${req.headers.host}${req.originalUrl}` as Resource;
+
+    // const paymentRequirements = [
+    //   createExactPaymentRequirements(
+    //     price,
+    //     "base-sepolia",
+    //     resource,
+    //     "A bounty for solving a challenge"
+    //   ),
+    // ];
+
+    // console.log("verifying payment");
+    // const isValid = await verifyPayment(req, res, paymentRequirements);
+    // console.log("✅ Payment valid?", isValid);
+    // if (!isValid) return;
+
+    // const settleResponse = await settle(
+    //   exact.evm.decodePayment(req.header("X-PAYMENT")!),
+    //   paymentRequirements[0],
+    // );
+    // const responseHeader = settleResponseHeader(settleResponse);
+    // res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
+
     const newBounty = new Bounty({
-      id: uuidv4(),
       title,
       description,
       price,
       submittedBy,
       submittedAt: new Date().toISOString(),
-      solutions: []
+      solutions: [],
     });
 
     await newBounty.save();
     res.status(201).json({ message: 'Bounty created', bounty: newBounty });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to create bounty' });
   }
 });
+
 
 app.post('/answer/:bountyId', async (req, res) => {
   try {
     const { bountyId } = req.params;
     const { title, solution, submittedBy } = req.body;
 
-    const bounty = await Bounty.findOne({ id: bountyId });
+    const bounty = await Bounty.findById(bountyId);
     if (!bounty) {
       return res.status(404).json({ error: 'Bounty not found' });
     }
 
     const newSolution = {
-      id: uuidv4(),
       title,
       solution,
       submittedBy,
@@ -213,9 +212,38 @@ app.post('/answer/:bountyId', async (req, res) => {
 
     res.status(201).json({ message: 'Solution added', bounty });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to add solution' });
   }
 });
+
+app.get('/bounties', async (req, res) => {
+  try {
+    const bounties = await Bounty.find();
+
+    const formatted = bounties.map(b => ({
+      id: b._id.toString(),
+      title: b.title,
+      description: b.description,
+      price: b.price,
+      submittedBy: b.submittedBy,
+      submittedAt: b.submittedAt,
+      solutions: (b.solutions as unknown as any[]).map(s => ({
+      id: s._id.toString(),
+      title: s.title,
+      solution: s.solution,
+      submittedBy: s.submittedBy,
+      submittedAt: s.submittedAt,
+      }))
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch bounties' });
+  }
+});
+
 
 
 const PORT = 3000;
