@@ -149,30 +149,23 @@ const Bounty = mongoose.model('Bounty', BountySchema);
 app.post('/question', async (req, res) => {
   try {
     const { title, description, price, submittedBy } = req.body;
-    // const resource = `${req.protocol}://${req.headers.host}${req.originalUrl}` as Resource;
+    const resource = `${req.protocol}://${req.headers.host}${req.originalUrl}` as Resource;
 
-    // const paymentRequirements = [
-    //   createExactPaymentRequirements(
-    //     price,
-    //     "base-sepolia",
-    //     resource,
-    //     "A bounty for solving a challenge"
-    //   ),
-    // ];
+    const paymentRequirements = [
+      createExactPaymentRequirements(
+        price,
+        "base-sepolia",
+        resource,
+        "A bounty for solving a challenge"
+      ),
+    ];
 
-    // console.log("verifying payment");
-    // const isValid = await verifyPayment(req, res, paymentRequirements);
-    // console.log("✅ Payment valid?", isValid);
-    // if (!isValid) return;
-
-    // const settleResponse = await settle(
-    //   exact.evm.decodePayment(req.header("X-PAYMENT")!),
-    //   paymentRequirements[0],
-    // );
-    // const responseHeader = settleResponseHeader(settleResponse);
-    // res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
-
-    const newBounty = new Bounty({
+    console.log("verifying payment");
+    const isValid = await verifyPayment(req, res, paymentRequirements);
+    console.log("✅ Payment valid?", isValid);
+    //move it after the settle call
+    if (!isValid) return;
+       const newBounty = new Bounty({
       title,
       description,
       price,
@@ -182,6 +175,15 @@ app.post('/question', async (req, res) => {
     });
 
     await newBounty.save();
+    const settleResponse = await settle(
+      exact.evm.decodePayment(req.header("X-PAYMENT")!),
+      paymentRequirements[0],
+    );
+    console.log("✅ Payment settled:", settleResponse);
+    const responseHeader = settleResponseHeader(settleResponse);
+    res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
+
+    
     res.status(201).json({ message: 'Bounty created', bounty: newBounty });
   } catch (err) {
     console.error(err);

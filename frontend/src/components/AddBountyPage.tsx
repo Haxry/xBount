@@ -1,17 +1,86 @@
 import React, { useState } from 'react';
+import { createWalletClient, custom, getAddress, publicActions } from 'viem';
+import { baseSepolia } from 'viem/chains';
+import { exact } from 'x402/schemes';
+
+const x402Version = 1;
 
 export const AddBountyPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [response, setResponse] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting bounty:', { title, description, price });
-    setTitle('');
-    setDescription('');
-    setPrice('');
-    onBack();
+    setLoading(true);
+    setResponse(null);
+    setError(null);
+    const endpoint= 'http://localhost:3000/question'
+    try{
+        const [account] = await window.ethereum!.request({
+        method: 'eth_requestAccounts'
+      });
+      const address = getAddress(account);
+      console.log('Selected account address:', address);
+
+      const client = createWalletClient({
+        account,
+        chain: baseSepolia,
+        transport: custom(window.ethereum!)
+      }).extend(publicActions);
+
+      const preflightRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title,description, price })
+      });
+       
+      if (preflightRes.status !== 402) {
+        const data = await preflightRes.json();
+        setResponse(data);
+        setLoading(false);
+        return;
+      }
+
+      const { accepts } = await preflightRes.json();
+      console.log('Payment requirements:', accepts);
+
+      // Step 2: Create and settle payment
+      const payment = await exact.evm.createPayment(client, x402Version, accepts[0]);
+      console.log('Created payment:', payment);
+
+      const paymentStatus = await exact.evm.settle(client, payment, accepts[0]);
+      console.log('Payment status:', paymentStatus);
+
+      // Encode the payment to base64
+      const xPaymentHeader = window.btoa(unescape(encodeURIComponent(JSON.stringify(payment))));
+
+      // Step 3: Actual request with X-PAYMENT header
+      const paidRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-PAYMENT': xPaymentHeader,
+        },
+        body: JSON.stringify({ title, description, price })
+      });
+
+      const data = await paidRes.json();
+      setResponse(data);
+
+
+
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
