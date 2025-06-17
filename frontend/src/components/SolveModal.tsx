@@ -1,17 +1,52 @@
 import React, { useState } from 'react';
-
+import { createWalletClient, custom, getAddress, publicActions } from 'viem';
+import { baseSepolia } from 'viem/chains';
+import { exact } from 'x402/schemes';
 
 export const SolveModal: React.FC<{ isOpen: boolean; onClose: () => void; bountyId: string }> = ({ isOpen, onClose, bountyId }) => {
   const [title, setTitle] = useState('');
   const [solution, setSolution] = useState('');
 
-  const handleSubmit = () => {
-    // Handle solution submission
-    console.log('Submitting solution:', { bountyId, title, solution });
-    setTitle('');
-    setSolution('');
-    onClose();
-  };
+  const handleSubmit = async () => {
+  if (!title || !solution) {
+    alert("Please fill in both title and solution");
+    return;
+  }
+
+  try {
+    const [account] = await window.ethereum!.request({
+            method: 'eth_requestAccounts'
+          });
+          const address = getAddress(account);
+    
+    const response = await fetch(`http://localhost:3000/answer/${bountyId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        solution,
+        submittedBy:address,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to submit solution");
+    }
+
+    console.log("✅ Solution submitted:", data);
+    alert("Solution submitted successfully!");
+    setTitle("");
+    setSolution("");
+    onClose(); // Close modal
+  } catch (err: any) {
+    console.error("❌ Error submitting solution:", err);
+    alert(err.message || "Something went wrong");
+  }
+};
 
   if (!isOpen) return null;
 

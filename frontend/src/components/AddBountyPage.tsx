@@ -37,7 +37,7 @@ export const AddBountyPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ title,description, price })
+        body: JSON.stringify({ title,description, price, submittedBy:address })
       });
        
       if (preflightRes.status !== 402) {
@@ -67,7 +67,7 @@ export const AddBountyPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           'Content-Type': 'application/json',
           'X-PAYMENT': xPaymentHeader,
         },
-        body: JSON.stringify({ title, description, price })
+        body: JSON.stringify({ title, description, price, submittedBy:address })
       });
 
       const data = await paidRes.json();

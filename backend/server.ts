@@ -150,7 +150,8 @@ app.post('/question', async (req, res) => {
   try {
     const { title, description, price, submittedBy } = req.body;
     const resource = `${req.protocol}://${req.headers.host}${req.originalUrl}` as Resource;
-
+    console.log("Creating bounty with resource:", resource);
+     console.log("bounty by",submittedBy);
     const paymentRequirements = [
       createExactPaymentRequirements(
         price,
