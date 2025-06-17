@@ -3,6 +3,7 @@ import express from "express";
 import { exact } from "x402/schemes";
 import cors from "cors";
 import mongoose from "mongoose";
+import axios from "axios";
 import {
   Network,
   PaymentPayload,
@@ -244,6 +245,33 @@ app.get('/bounties', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch bounties' });
+  }
+});
+
+app.post('/ask', async (req, res) => {
+  const { prompt } = req.body;
+
+  try {
+    const response = await axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: 'mistralai/mistral-7b-instruct', 
+        messages: [{ role: 'user', content: prompt }],
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'http://localhost:4000', // required by OpenRouter
+        },
+      }
+    );
+
+    const reply = response.data.choices[0].message.content;
+    res.json({ response: reply });
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    res.status(500).json({ error: 'Failed to query LLM' });
   }
 });
 
