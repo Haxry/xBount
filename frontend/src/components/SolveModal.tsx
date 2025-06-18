@@ -17,6 +17,9 @@ export const SolveModal: React.FC<{ isOpen: boolean; onClose: () => void; bounty
     alert("Please fill in both title and solution");
     return;
   }
+  setLoading(true);
+    setResponse(null);
+    setError(null);
 
   try {
     const [account] = await window.ethereum!.request({

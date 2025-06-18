@@ -1,6 +1,9 @@
 
 import { Bot, MessageCircle, Send, X, Code, Database, Wrench, Brain, Shield, Globe, Zap, Cpu, FileText } from "lucide-react";
 import { useState } from "react";
+import { createWalletClient, custom, getAddress, publicActions } from 'viem';
+import { baseSepolia } from 'viem/chains';
+import { exact } from 'x402/schemes';
 
 const agents = [
   {
@@ -68,11 +71,16 @@ const agents = [
   }
 ];
 
+const x402Version = 1;
+
 export const AskAIPage = ({ onBack }) => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [response, setResponse] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
   const handleUseAgent = (agent) => {
     setSelectedAgent(agent);
@@ -100,17 +108,31 @@ export const AskAIPage = ({ onBack }) => {
     const currentMessage = inputMessage;
     setInputMessage("");
     setIsLoading(true);
+    setLoading(true);
+    setResponse(null);
+    setError(null);
 
     try {
-      
-      const agentPrompt = `You are a ${selectedAgent.title}. ${selectedAgent.description}. 
+         const [account] = await window.ethereum!.request({
+                method: 'eth_requestAccounts'
+              });
+              const address = getAddress(account);
+              console.log('Selected account address:', address);
+        
+              const client = createWalletClient({
+                account,
+                chain: baseSepolia,
+                transport: custom(window.ethereum!)
+              }).extend(publicActions);
+
+              const agentPrompt = `You are a ${selectedAgent.title}. ${selectedAgent.description}. 
       
 Please respond to the following user query with expertise in your domain:
 ${currentMessage}
 
 Provide a helpful, accurate, and detailed response based on your specialization.`;
-
-      const response = await fetch('http://localhost:3000/ask', {
+        
+       const preflightRes = await fetch('http://localhost:3000/ask', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,11 +142,61 @@ Provide a helpful, accurate, and detailed response based on your specialization.
         })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+               
+              if (preflightRes.status !== 402) {
+                const data = await preflightRes.json();
+                setResponse(data);
+                setLoading(false);
+                return;
+              }
+        
+              const { accepts } = await preflightRes.json();
+              console.log('Payment requirements:', accepts);
+        
+              // Step 2: Create and settle payment
+              const payment = await exact.evm.createPayment(client, x402Version, accepts[0]);
+              console.log('Created payment:', payment);
+        
+              const paymentStatus = await exact.evm.settle(client, payment, accepts[0]);
+              console.log('Payment status:', paymentStatus);
+        
+              // Encode the payment to base64
+              const xPaymentHeader = window.btoa(unescape(encodeURIComponent(JSON.stringify(payment))));
+        
+              // Step 3: Actual request with X-PAYMENT header
+              const paidRes = await fetch('http://localhost:3000/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+           'X-PAYMENT': xPaymentHeader,
+        },
+        body: JSON.stringify({
+          prompt: agentPrompt
+        })
+      });
 
-      const data = await response.json();
+        
+              const data = await paidRes.json();
+              setResponse(data);
+
+      
+      
+
+    //   const response = await fetch('http://localhost:3000/ask', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //       prompt: agentPrompt
+    //     })
+    //   });
+
+    //   if (!response.ok) {
+    //     throw new Error(`HTTP error! status: ${response.status}`);
+    //   }
+
+    //   const data = await response.json();
       
       const agentMessage = {
         id: messages.length + 2,
