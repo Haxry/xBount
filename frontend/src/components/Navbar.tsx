@@ -1,30 +1,28 @@
 import React, { useState } from 'react';
 import { Plus, Bot, Wallet } from 'lucide-react';
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
+interface NavbarProps {
+  onAddBounty: () => void;
+  onAskAI: () => void;
+  setConnectedAddress: (addr: string) => void;
 }
 
-export const Navbar: React.FC<{ onAddBounty: () => void; onAskAI: () => void }> = ({ onAddBounty, onAskAI }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onAddBounty, onAskAI, setConnectedAddress }) => {
   const [isConnected, setIsConnected] = useState(false);
-  const [address, setAddress] = useState('');
 
   const connectWallet = async () => {
-    // Disconnect if already connected
     if (isConnected) {
       setIsConnected(false);
-      setAddress('');
+      setConnectedAddress('');
       return;
     }
 
-    // Otherwise, connect
     if (typeof window.ethereum !== 'undefined') {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const addr = accounts[0];
         setIsConnected(true);
-        setAddress(accounts[0]);
+        setConnectedAddress(addr);
       } catch (err) {
         console.error('🛑 Wallet connection failed:', err);
         alert('Failed to connect wallet');
@@ -63,7 +61,9 @@ export const Navbar: React.FC<{ onAddBounty: () => void; onAskAI: () => void }> 
             >
               <Wallet className="w-4 h-4 mr-2" />
               {isConnected ? (
-                <span className="text-sm font-mono">{address.slice(0, 6)}...{address.slice(-4)}</span>
+                <span className="text-sm font-mono">
+                  {window.ethereum.selectedAddress.slice(0, 6)}...{window.ethereum.selectedAddress.slice(-4)}
+                </span>
               ) : (
                 'Connect Wallet'
               )}

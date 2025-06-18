@@ -26,7 +26,7 @@ interface Bounty {
 export const HomePage: React.FC<{ onAddBounty: () => void; onAskAI: () => void }> = ({ onAddBounty, onAskAI }) => {
   const [bounties,setBounties] = useState<Bounty[]>([]);
   const [selectedBounty, setSelectedBounty] = useState<string | null>(null);
-
+  const [address, setAddress] = useState<string | null>(null);
   const fetchBounties = async () => {
     try {
       const res = await fetch('http://localhost:3000/bounties'); // replace with your actual backend URL
@@ -39,7 +39,7 @@ export const HomePage: React.FC<{ onAddBounty: () => void; onAskAI: () => void }
 
   useEffect(() => {
     fetchBounties();
-  }, [bounties]);
+  }, []);
 
   const handleSolve = (bountyId: string) => {
     setSelectedBounty(bountyId);
@@ -51,7 +51,7 @@ export const HomePage: React.FC<{ onAddBounty: () => void; onAskAI: () => void }
 
   return (
     <div className="w-screen min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 overflow-x-hidden">
-    <Navbar onAddBounty={onAddBounty} onAskAI={onAskAI} />
+    <Navbar onAddBounty={onAddBounty} onAskAI={onAskAI} setConnectedAddress={setAddress} />
     
     <div className="px-6 py-12">
       <div className="text-center mb-16">
@@ -74,6 +74,7 @@ export const HomePage: React.FC<{ onAddBounty: () => void; onAskAI: () => void }
               bounty={bounty}
               onSolve={handleSolve}
               onAcceptSolution={handleAcceptSolution}
+              connectedAddress={address || '0xfake1234567890abcdef1234567890abcdef1234'}
             />
           ))}
         </div>
