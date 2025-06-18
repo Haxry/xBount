@@ -177,13 +177,13 @@ app.post('/question', async (req, res) => {
     });
 
     await newBounty.save();
-    const settleResponse = await settle(
-      exact.evm.decodePayment(req.header("X-PAYMENT")!),
-      paymentRequirements[0],
-    );
-    console.log("✅ Payment settled:", settleResponse);
-    const responseHeader = settleResponseHeader(settleResponse);
-    res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
+    // const settleResponse = await settle(
+    //   exact.evm.decodePayment(req.header("X-PAYMENT")!),
+    //   paymentRequirements[0],
+    // );
+    // console.log("✅ Payment settled:", settleResponse);
+    // const responseHeader = settleResponseHeader(settleResponse);
+    // res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
 
     
     res.status(201).json({ message: 'Bounty created', bounty: newBounty });
@@ -198,6 +198,30 @@ app.post('/answer/:bountyId', async (req, res) => {
   try {
     const { bountyId } = req.params;
     const { title, solution, submittedBy } = req.body;
+    const price = 0.01; 
+    const resource = `${req.protocol}://${req.headers.host}${req.originalUrl}` as Resource;
+    console.log("Creating bounty with resource:", resource);
+    console.log("bounty by",submittedBy);
+    const paymentRequirements = [
+      createExactPaymentRequirements(
+        price,
+        "base-sepolia",
+        resource,
+        "Answer to a bounty",
+      ),
+    ];
+
+    console.log("verifying payment");
+    const isValid = await verifyPayment(req, res, paymentRequirements);
+    console.log("✅ Payment valid?", isValid);
+    if (!isValid) return;
+    //   const settleResponse = await settle(
+    //   exact.evm.decodePayment(req.header("X-PAYMENT")!),
+    //   paymentRequirements[0],
+    // );
+    // console.log("✅ Payment settled:", settleResponse);
+    // const responseHeader = settleResponseHeader(settleResponse);
+    // res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
 
     const bounty = await Bounty.findById(bountyId);
     if (!bounty) {

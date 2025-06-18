@@ -3,9 +3,14 @@ import { createWalletClient, custom, getAddress, publicActions } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { exact } from 'x402/schemes';
 
+const x402Version = 1;
+
 export const SolveModal: React.FC<{ isOpen: boolean; onClose: () => void; bountyId: string }> = ({ isOpen, onClose, bountyId }) => {
   const [title, setTitle] = useState('');
   const [solution, setSolution] = useState('');
+  const [response, setResponse] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
   if (!title || !solution) {
@@ -18,24 +23,73 @@ export const SolveModal: React.FC<{ isOpen: boolean; onClose: () => void; bounty
             method: 'eth_requestAccounts'
           });
           const address = getAddress(account);
+          
+          const client = createWalletClient({
+                  account,
+                  chain: baseSepolia,
+                  transport: custom(window.ethereum!)
+                }).extend(publicActions);
+          const endpoint = `http://localhost:3000/answer/${bountyId}`;
+                const preflightRes = await fetch(endpoint, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ title,solution, submittedBy:address })
+                });
+                 
+                if (preflightRes.status !== 402) {
+                  const data = await preflightRes.json();
+                  setResponse(data);
+                  setLoading(false);
+                  return;
+                }
+          
+                const { accepts } = await preflightRes.json();
+                console.log('Payment requirements:', accepts);
+          
+                // Step 2: Create and settle payment
+                const payment = await exact.evm.createPayment(client, x402Version, accepts[0]);
+                console.log('Created payment:', payment);
+          
+                const paymentStatus = await exact.evm.settle(client, payment, accepts[0]);
+                console.log('Payment status:', paymentStatus);
+          
+                // Encode the payment to base64
+                const xPaymentHeader = window.btoa(unescape(encodeURIComponent(JSON.stringify(payment))));
+          
+                // Step 3: Actual request with X-PAYMENT header
+                const paidRes = await fetch(endpoint, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-PAYMENT': xPaymentHeader,
+                  },
+                  body: JSON.stringify({ title, solution, submittedBy:address })
+                });
+                console.log("paidRes", paidRes);
+          
+                const data = await paidRes.json();
+                setResponse(data);
+
     
-    const response = await fetch(`http://localhost:3000/answer/${bountyId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        solution,
-        submittedBy:address,
-      }),
-    });
+    // const response = await fetch(`http://localhost:3000/answer/${bountyId}`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     title,
+    //     solution,
+    //     submittedBy:address,
+    //   }),
+    // });
 
-    const data = await response.json();
+    // const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to submit solution");
-    }
+    // if (!response.ok) {
+    //   throw new Error(data.error || "Failed to submit solution");
+    // }
 
     console.log("✅ Solution submitted:", data);
     alert("Solution submitted successfully!");
