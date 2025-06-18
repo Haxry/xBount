@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import bountyRouter from "./bounty";
 import answerRouter from "./answer";
 import askaiRouter from "./askai";
+import prizeRouter from "./distributeprize";
 config();
 const facilitatorUrl = process.env.FACILITATOR_URL as Resource;
 const payTo = process.env.ADDRESS as `0x${string}`;
@@ -33,6 +34,7 @@ app.use(express.json());
 app.use('/api', bountyRouter);
 app.use('/api', answerRouter);
 app.use('/api', askaiRouter);
+app.use('/api', prizeRouter);
 const { verify, settle } = useFacilitator({ url: facilitatorUrl });
 const x402Version = 1;
 
