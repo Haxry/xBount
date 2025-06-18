@@ -256,9 +256,14 @@ export const AddBountyPage = ({ onBack }) => {
   //   }
   // };
 
-  const handleSubmit = async () => {
-    
-  const res = await fetch("http://localhost:3000/api/create-bounty", {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setResponse(null);
+    setError(null);
+    setPaymentStatus(null);
+  try{
+    const res = await fetch("http://localhost:3000/api/create-bounty", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -267,12 +272,19 @@ export const AddBountyPage = ({ onBack }) => {
       title,
       description,
       price,
-      submittedBy: "0xuser", // actual wallet address
+      submittedBy: "0xcFff80fB428E009Bef190F13b93a37f36E0405bF", // actual wallet address
     }),
   });
-
+  
   const data = await res.json();
   console.log("✅ Bounty created with payment:", data);
+  setPaymentStatus(data.paymentDetails);
+  } catch (err) {
+    console.error("❌ Payment or creation failed:", err);
+    setError(err.message || 'Unexpected error occurred');
+  } finally{
+    setLoading(false);
+  }
 };
 
   const copyToClipboard = async (text) => {

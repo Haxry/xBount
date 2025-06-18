@@ -254,7 +254,12 @@ export const SolveModal = ({ isOpen, onClose, bountyId }) => {
   // };
 
   const handleSubmit = async () => {
-  const res = await fetch(`http://localhost:3000/api/answer-bounty/${bountyId}`, {
+    setLoading(true);
+    setResponse(null);
+    setError(null);
+    setPaymentStatus(null);
+  try{
+    const res = await fetch(`http://localhost:3000/api/answer-bounty/${bountyId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -262,11 +267,19 @@ export const SolveModal = ({ isOpen, onClose, bountyId }) => {
     body: JSON.stringify({
       title,
       solution,
-      submittedBy: "0xuser", // actual wallet address
+      submittedBy: "0xcFff80fB428E009Bef190F13b93a37f36E0405bF", 
     }),
   });
   const data = await res.json();
   console.log("✅ Bounty created with payment:", data);
+  setResponse(data);
+  setPaymentStatus(data.paymentDetails);
+  } catch (err) {
+    console.error("❌ Error submitting solution:", err);
+    setError(err.message || "Something went wrong");
+  } finally {
+    setLoading(false);
+  }
 };
 
   const copyToClipboard = async (text) => {

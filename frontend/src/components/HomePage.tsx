@@ -74,7 +74,7 @@ export const HomePage: React.FC<{ onAddBounty: () => void; onAskAI: () => void }
               bounty={bounty}
               onSolve={handleSolve}
               onAcceptSolution={handleAcceptSolution}
-              connectedAddress={address || '0xfake1234567890abcdef1234567890abcdef1234'}
+              
             />
           ))}
         </div>
