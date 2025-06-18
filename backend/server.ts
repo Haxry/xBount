@@ -15,6 +15,9 @@ import {
 import { useFacilitator } from "x402/verify";
 import { processPriceToAtomicAmount } from "x402/shared";
 import { v4 as uuidv4 } from "uuid";
+import bountyRouter from "./bounty";
+import answerRouter from "./answer";
+import askaiRouter from "./askai";
 config();
 const facilitatorUrl = process.env.FACILITATOR_URL as Resource;
 const payTo = process.env.ADDRESS as `0x${string}`;
@@ -27,6 +30,9 @@ if (!facilitatorUrl || !payTo) {
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/api', bountyRouter);
+app.use('/api', answerRouter);
+app.use('/api', askaiRouter);
 const { verify, settle } = useFacilitator({ url: facilitatorUrl });
 const x402Version = 1;
 
@@ -196,7 +202,7 @@ app.post('/question', async (req, res) => {
 
 
 app.post('/answer/:bountyId', async (req, res) => {
-  try {
+  
     const { bountyId } = req.params;
     const { title, solution, submittedBy } = req.body;
     
@@ -217,6 +223,7 @@ app.post('/answer/:bountyId', async (req, res) => {
     const isValid = await verifyPayment(req, res, paymentRequirements);
     console.log("✅ Payment valid?", isValid);
     if (!isValid) return;
+    try {
       const settleResponse = await settle(
       exact.evm.decodePayment(req.header("X-PAYMENT")!),
       paymentRequirements[0],
@@ -278,7 +285,7 @@ app.post('/ask', async (req, res) => {
   const { prompt } = req.body;
  
 
-  try {
+  
      const price = 0.01; 
     const resource = `${req.protocol}://${req.headers.host}${req.originalUrl}` as Resource;
     console.log("Asking AI with resource:", resource);
@@ -295,13 +302,14 @@ app.post('/ask', async (req, res) => {
     const isValid = await verifyPayment(req, res, paymentRequirements);
     console.log("✅ Payment valid?", isValid);
     if (!isValid) return;
-    //   const settleResponse = await settle(
-    //   exact.evm.decodePayment(req.header("X-PAYMENT")!),
-    //   paymentRequirements[0],
-    // );
-    // console.log("✅ Payment settled:", settleResponse);
-    // const responseHeader = settleResponseHeader(settleResponse);
-    // res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
+    try {
+      const settleResponse = await settle(
+      exact.evm.decodePayment(req.header("X-PAYMENT")!),
+      paymentRequirements[0],
+    );
+    console.log("✅ Payment settled:", settleResponse);
+    const responseHeader = settleResponseHeader(settleResponse);
+    res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {

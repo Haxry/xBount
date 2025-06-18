@@ -10,11 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@coinbase/cdp-sdk": "^1.16.0",
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
+    "buffer": "^6.0.3",
+    "dotenv": "^16.5.0",
     "lucide-react": "^0.515.0",
+    "process": "^0.11.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "viem": "^2.31.3",
-    "x402": "^0.4.0"
+    "x402": "^0.4.0",
+    "x402-fetch": "^0.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

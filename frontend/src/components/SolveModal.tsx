@@ -175,83 +175,99 @@ export const SolveModal = ({ isOpen, onClose, bountyId }) => {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const handleSubmit = async () => {
-    if (!title || !solution) {
-      setError("Please fill in both title and solution");
-      return;
-    }
+  // const handleSubmit = async () => {
+  //   if (!title || !solution) {
+  //     setError("Please fill in both title and solution");
+  //     return;
+  //   }
     
-    setLoading(true);
-    setResponse(null);
-    setError(null);
-    setPaymentStatus(null);
+  //   setLoading(true);
+  //   setResponse(null);
+  //   setError(null);
+  //   setPaymentStatus(null);
 
-    try {
-      const [account] = await window.ethereum.request({
-        method: 'eth_requestAccounts'
-      });
-      const address = getAddress(account);
+  //   try {
+  //     const [account] = await window.ethereum.request({
+  //       method: 'eth_requestAccounts'
+  //     });
+  //     const address = getAddress(account);
       
-      const client = createWalletClient({
-        account,
-        chain: baseSepolia,
-        transport: custom(window.ethereum)
-      }).extend(publicActions);
+  //     const client = createWalletClient({
+  //       account,
+  //       chain: baseSepolia,
+  //       transport: custom(window.ethereum)
+  //     }).extend(publicActions);
       
-      const endpoint = `http://localhost:3000/answer/${bountyId}`;
-      const preflightRes = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ title, solution, submittedBy: address })
-      });
+  //     const endpoint = `http://localhost:3000/answer/${bountyId}`;
+  //     const preflightRes = await fetch(endpoint, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({ title, solution, submittedBy: address })
+  //     });
        
-      if (preflightRes.status !== 402) {
-        const data = await preflightRes.json();
-        setResponse(data);
-        setLoading(false);
-        return;
-      }
+  //     if (preflightRes.status !== 402) {
+  //       const data = await preflightRes.json();
+  //       setResponse(data);
+  //       setLoading(false);
+  //       return;
+  //     }
 
-      const { accepts } = await preflightRes.json();
-      console.log('Payment requirements:', accepts);
+  //     const { accepts } = await preflightRes.json();
+  //     console.log('Payment requirements:', accepts);
 
-      // Step 2: Create and settle payment
-      const payment = await exact.evm.createPayment(client, x402Version, accepts[0]);
-      console.log('Created payment:', payment);
+  //     // Step 2: Create and settle payment
+  //     const payment = await exact.evm.createPayment(client, x402Version, accepts[0]);
+  //     console.log('Created payment:', payment);
 
-      const paymentStatusResult = await exact.evm.settle(client, payment, accepts[0]);
-      console.log('Payment status:', paymentStatusResult);
+  //     const paymentStatusResult = await exact.evm.settle(client, payment, accepts[0]);
+  //     console.log('Payment status:', paymentStatusResult);
       
-      // Store payment status for display
-      setPaymentStatus(paymentStatusResult);
+  //     // Store payment status for display
+  //     setPaymentStatus(paymentStatusResult);
 
-      // Encode the payment to base64
-      const xPaymentHeader = window.btoa(unescape(encodeURIComponent(JSON.stringify(payment))));
+  //     // Encode the payment to base64
+  //     const xPaymentHeader = window.btoa(unescape(encodeURIComponent(JSON.stringify(payment))));
 
-      // Step 3: Actual request with X-PAYMENT header
-      const paidRes = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-PAYMENT': xPaymentHeader,
-        },
-        body: JSON.stringify({ title, solution, submittedBy: address })
-      });
-      console.log("paidRes", paidRes);
+  //     // Step 3: Actual request with X-PAYMENT header
+  //     const paidRes = await fetch(endpoint, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'X-PAYMENT': xPaymentHeader,
+  //       },
+  //       body: JSON.stringify({ title, solution, submittedBy: address })
+  //     });
+  //     console.log("paidRes", paidRes);
 
-      const data = await paidRes.json();
-      setResponse(data);
+  //     const data = await paidRes.json();
+  //     setResponse(data);
 
-      console.log("✅ Solution submitted:", data);
-    } catch (err) {
-      console.error("❌ Error submitting solution:", err);
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     console.log("✅ Solution submitted:", data);
+  //   } catch (err) {
+  //     console.error("❌ Error submitting solution:", err);
+  //     setError(err.message || "Something went wrong");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleSubmit = async () => {
+  const res = await fetch(`http://localhost:3000/api/answer-bounty/${bountyId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title,
+      solution,
+      submittedBy: "0xuser", // actual wallet address
+    }),
+  });
+  const data = await res.json();
+  console.log("✅ Bounty created with payment:", data);
+};
 
   const copyToClipboard = async (text) => {
     try {

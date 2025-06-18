@@ -94,8 +94,134 @@ export const AskAIPage = ({ onBack }) => {
     ]);
   };
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+//   const handleSendMessage = async () => {
+//     if (!inputMessage.trim() || isLoading) return;
+
+//     const userMessage = {
+//       id: messages.length + 1,
+//       text: inputMessage,
+//       sender: "user",
+//       timestamp: new Date()
+//     };
+
+//     setMessages(prev => [...prev, userMessage]);
+//     const currentMessage = inputMessage;
+//     setInputMessage("");
+//     setIsLoading(true);
+//     setLoading(true);
+//     setResponse(null);
+//     setError(null);
+
+//     try {
+//          const [account] = await window.ethereum!.request({
+//                 method: 'eth_requestAccounts'
+//               });
+//               const address = getAddress(account);
+//               console.log('Selected account address:', address);
+        
+//               const client = createWalletClient({
+//                 account,
+//                 chain: baseSepolia,
+//                 transport: custom(window.ethereum!)
+//               }).extend(publicActions);
+
+//               const agentPrompt = `You are a ${selectedAgent.title}. ${selectedAgent.description}. 
+      
+// Please respond to the following user query with expertise in your domain:
+// ${currentMessage}
+
+// Provide a helpful, accurate, and detailed response based on your specialization.`;
+        
+//        const preflightRes = await fetch('http://localhost:3000/ask', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//           prompt: agentPrompt
+//         })
+//       });
+
+               
+//               if (preflightRes.status !== 402) {
+//                 const data = await preflightRes.json();
+//                 setResponse(data);
+//                 setLoading(false);
+//                 return;
+//               }
+        
+//               const { accepts } = await preflightRes.json();
+//               console.log('Payment requirements:', accepts);
+        
+//               // Step 2: Create and settle payment
+//               const payment = await exact.evm.createPayment(client, x402Version, accepts[0]);
+//               console.log('Created payment:', payment);
+        
+//               const paymentStatus = await exact.evm.settle(client, payment, accepts[0]);
+//               console.log('Payment status:', paymentStatus);
+        
+//               // Encode the payment to base64
+//               const xPaymentHeader = window.btoa(unescape(encodeURIComponent(JSON.stringify(payment))));
+        
+//               // Step 3: Actual request with X-PAYMENT header
+//               const paidRes = await fetch('http://localhost:3000/ask', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//            'X-PAYMENT': xPaymentHeader,
+//         },
+//         body: JSON.stringify({
+//           prompt: agentPrompt
+//         })
+//       });
+
+        
+//               const data = await paidRes.json();
+//               setResponse(data);
+
+      
+      
+
+//     //   const response = await fetch('http://localhost:3000/ask', {
+//     //     method: 'POST',
+//     //     headers: {
+//     //       'Content-Type': 'application/json',
+//     //     },
+//     //     body: JSON.stringify({
+//     //       prompt: agentPrompt
+//     //     })
+//     //   });
+
+//     //   if (!response.ok) {
+//     //     throw new Error(`HTTP error! status: ${response.status}`);
+//     //   }
+
+//     //   const data = await response.json();
+      
+//       const agentMessage = {
+//         id: messages.length + 2,
+//         text: data.response || "I'm processing your request. This is a placeholder response until the backend is connected.",
+//         sender: "agent",
+//         timestamp: new Date()
+//       };
+
+//       setMessages(prev => [...prev, agentMessage]);
+//     } catch (error) {
+//       console.error('Error calling backend:', error);
+//       const errorMessage = {
+//         id: messages.length + 2,
+//         text: "I apologize, but I'm having trouble connecting to my knowledge base right now. Please try again in a moment.",
+//         sender: "agent",
+//         timestamp: new Date()
+//       };
+//       setMessages(prev => [...prev, errorMessage]);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+const handleSendMessage = async () => {
+      if (!inputMessage.trim() || isLoading) return;
 
     const userMessage = {
       id: messages.length + 1,
@@ -111,103 +237,38 @@ export const AskAIPage = ({ onBack }) => {
     setLoading(true);
     setResponse(null);
     setError(null);
-
-    try {
-         const [account] = await window.ethereum!.request({
-                method: 'eth_requestAccounts'
-              });
-              const address = getAddress(account);
-              console.log('Selected account address:', address);
-        
-              const client = createWalletClient({
-                account,
-                chain: baseSepolia,
-                transport: custom(window.ethereum!)
-              }).extend(publicActions);
-
-              const agentPrompt = `You are a ${selectedAgent.title}. ${selectedAgent.description}. 
+               try{
+                 const agentPrompt = `You are a ${selectedAgent.title}. ${selectedAgent.description}. 
       
-Please respond to the following user query with expertise in your domain:
-${currentMessage}
+ Please respond to the following user query with expertise in your domain:
+ ${currentMessage}`;
+  const res = await fetch("http://localhost:3000/api/ask-ai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt:agentPrompt 
+    }),
+  });
 
-Provide a helpful, accurate, and detailed response based on your specialization.`;
+  const data = await res.json();
+  console.log("✅ agent responded with", data);
+  console.log("✅ answer", data.bounty.response);
         
-       const preflightRes = await fetch('http://localhost:3000/ask', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: agentPrompt
-        })
-      });
-
-               
-              if (preflightRes.status !== 402) {
-                const data = await preflightRes.json();
-                setResponse(data);
-                setLoading(false);
-                return;
-              }
-        
-              const { accepts } = await preflightRes.json();
-              console.log('Payment requirements:', accepts);
-        
-              // Step 2: Create and settle payment
-              const payment = await exact.evm.createPayment(client, x402Version, accepts[0]);
-              console.log('Created payment:', payment);
-        
-              const paymentStatus = await exact.evm.settle(client, payment, accepts[0]);
-              console.log('Payment status:', paymentStatus);
-        
-              // Encode the payment to base64
-              const xPaymentHeader = window.btoa(unescape(encodeURIComponent(JSON.stringify(payment))));
-        
-              // Step 3: Actual request with X-PAYMENT header
-              const paidRes = await fetch('http://localhost:3000/ask', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-           'X-PAYMENT': xPaymentHeader,
-        },
-        body: JSON.stringify({
-          prompt: agentPrompt
-        })
-      });
-
-        
-              const data = await paidRes.json();
-              setResponse(data);
-
-      
-      
-
-    //   const response = await fetch('http://localhost:3000/ask', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       prompt: agentPrompt
-    //     })
-    //   });
-
-    //   if (!response.ok) {
-    //     throw new Error(`HTTP error! status: ${response.status}`);
-    //   }
-
-    //   const data = await response.json();
-      
       const agentMessage = {
         id: messages.length + 2,
-        text: data.response || "I'm processing your request. This is a placeholder response until the backend is connected.",
+        text:  data.bounty.response || "I'm processing your request. This is a placeholder response until the backend is connected.",
         sender: "agent",
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, agentMessage]);
-    } catch (error) {
-      console.error('Error calling backend:', error);
+
+
+
+               } catch (error) {
+    console.error('Error calling backend:', error);
       const errorMessage = {
         id: messages.length + 2,
         text: "I apologize, but I'm having trouble connecting to my knowledge base right now. Please try again in a moment.",
@@ -215,10 +276,10 @@ Provide a helpful, accurate, and detailed response based on your specialization.
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
-    } finally {
+               } finally {
       setIsLoading(false);
-    }
-  };
+               }
+};
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {

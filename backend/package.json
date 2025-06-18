@@ -10,12 +10,14 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@coinbase/cdp-sdk": "^1.16.0",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "mongoose": "^8.16.0",
     "uuid": "^11.1.0",
-    "x402": "^0.4.0"
+    "x402": "^0.4.0",
+    "x402-fetch": "^0.4.0"
   }
 }

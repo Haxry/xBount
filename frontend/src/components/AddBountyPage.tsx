@@ -169,7 +169,9 @@ import { CheckCircle, XCircle, ExternalLink, Loader2, Copy, Check } from 'lucide
  import { createWalletClient, custom, getAddress, publicActions } from 'viem';
  import { baseSepolia } from 'viem/chains';
  import { exact } from 'x402/schemes';
-const x402Version = 1;
+ 
+
+ const x402Version = 1;
 export const AddBountyPage = ({ onBack }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -180,79 +182,98 @@ export const AddBountyPage = ({ onBack }) => {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setResponse(null);
-    setError(null);
-    setPaymentStatus(null);
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setResponse(null);
+  //   setError(null);
+  //   setPaymentStatus(null);
     
-    const endpoint = 'http://localhost:3000/question';
+  //   const endpoint = 'http://localhost:3000/question';
     
-    try {
-      const [account] = await window.ethereum.request({
-        method: 'eth_requestAccounts'
-      });
-      const address = getAddress(account);
-      console.log('Selected account address:', address);
+  //   try {
+  //     const [account] = await window.ethereum.request({
+  //       method: 'eth_requestAccounts'
+  //     });
+  //     const address = getAddress(account);
+  //     console.log('Selected account address:', address);
 
-      const client = createWalletClient({
-        account,
-        chain: baseSepolia,
-        transport: custom(window.ethereum)
-      }).extend(publicActions);
+  //     const client = createWalletClient({
+  //       account,
+  //       chain: baseSepolia,
+  //       transport: custom(window.ethereum)
+  //     }).extend(publicActions);
 
-      const preflightRes = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ title, description, price, submittedBy: address })
-      });
+  //     const preflightRes = await fetch(endpoint, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({ title, description, price, submittedBy: address })
+  //     });
        
-      if (preflightRes.status !== 402) {
-        const data = await preflightRes.json();
-        setResponse(data);
-        setLoading(false);
-        return;
-      }
+  //     if (preflightRes.status !== 402) {
+  //       const data = await preflightRes.json();
+  //       setResponse(data);
+  //       setLoading(false);
+  //       return;
+  //     }
 
-      const { accepts } = await preflightRes.json();
-      console.log('Payment requirements:', accepts);
+  //     const { accepts } = await preflightRes.json();
+  //     console.log('Payment requirements:', accepts);
 
-      // Step 2: Create and settle payment
-      const payment = await exact.evm.createPayment(client, x402Version, accepts[0]);
-      console.log('Created payment:', payment);
+  //     // Step 2: Create and settle payment
+  //     const payment = await exact.evm.createPayment(client, x402Version, accepts[0]);
+  //     console.log('Created payment:', payment);
 
-      const paymentStatusResult = await exact.evm.settle(client, payment, accepts[0]);
-      console.log('Payment status:', paymentStatusResult);
+  //     const paymentStatusResult = await exact.evm.settle(client, payment, accepts[0]);
+  //     console.log('Payment status:', paymentStatusResult);
       
-      // Store payment status for display
-      setPaymentStatus(paymentStatusResult);
+  //     // Store payment status for display
+  //     setPaymentStatus(paymentStatusResult);
 
-      // Encode the payment to base64
-      const xPaymentHeader = window.btoa(unescape(encodeURIComponent(JSON.stringify(payment))));
+  //     // Encode the payment to base64
+  //     const xPaymentHeader = window.btoa(unescape(encodeURIComponent(JSON.stringify(payment))));
 
-      // Step 3: Actual request with X-PAYMENT header
-      const paidRes = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-PAYMENT': xPaymentHeader,
-        },
-        body: JSON.stringify({ title, description, price, submittedBy: address })
-      });
+  //     // Step 3: Actual request with X-PAYMENT header
+  //     const paidRes = await fetch(endpoint, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'X-PAYMENT': xPaymentHeader,
+  //       },
+  //       body: JSON.stringify({ title, description, price, submittedBy: address })
+  //     });
 
-      const data = await paidRes.json();
-      setResponse(data);
+  //     const data = await paidRes.json();
+  //     setResponse(data);
 
-    } catch (err) {
-      console.error(err);
-      setError(err.message || 'Unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   } catch (err) {
+  //     console.error(err);
+  //     setError(err.message || 'Unexpected error occurred');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleSubmit = async () => {
+    
+  const res = await fetch("http://localhost:3000/api/create-bounty", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title,
+      description,
+      price,
+      submittedBy: "0xuser", // actual wallet address
+    }),
+  });
+
+  const data = await res.json();
+  console.log("✅ Bounty created with payment:", data);
+};
 
   const copyToClipboard = async (text) => {
     try {
