@@ -59,9 +59,7 @@ export const HomePage: React.FC<{ onAddBounty: () => void; onAskAI: () => void }
           Welcome to <span className="text-indigo-600">XBount</span>
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-          The premier bounty hunter platform where challenges meet solutions. 
-          Post your toughest problems, solve exciting challenges, and earn rewards 
-          in a thriving community of developers and problem solvers.
+         The premier platform for solving technical challenges and answering questions. Post your toughest problems, earn rewards for high-quality solutions, or get instant help from domain-specific AI assistants. Whether you're contributing, learning, or seeking expert guidance, join a vibrant community of developers driving knowledge forward.
         </p>
       </div>
 

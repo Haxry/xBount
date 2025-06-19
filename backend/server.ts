@@ -128,7 +128,7 @@ async function verifyPayment(
 }
 
 
-const mongoURI = 'mongodb+srv://Harrish:Harrish%4090600@cluster0.0rynh.mongodb.net/myDatabase?retryWrites=true&w=majority';
+const mongoURI =process.env.MONGO_URI ;
 
 // Connect to MongoDB
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
