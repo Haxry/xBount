@@ -178,25 +178,6 @@ Provide a helpful, accurate, and detailed response based on your specialization.
         
               const data = await paidRes.json();
               setResponse(data);
-
-      
-      
-
-    //   const response = await fetch('http://localhost:3000/ask', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       prompt: agentPrompt
-    //     })
-    //   });
-
-    //   if (!response.ok) {
-    //     throw new Error(`HTTP error! status: ${response.status}`);
-    //   }
-
-    //   const data = await response.json();
       
       const agentMessage = {
         id: messages.length + 2,
