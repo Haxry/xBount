@@ -28,7 +28,7 @@ const fetchWithPayment = wrapFetchWithPayment(fetch, account);
     submittedBy,
   };
 
-  const url = `http://localhost:3000/answer/${bountyId}`; // This should be a verified-payable endpoint
+  const url = `http://localhost:3000/answer/${bountyId}`; 
 
   try {
     const response = await fetchWithPayment(url, {
@@ -45,12 +45,12 @@ const fetchWithPayment = wrapFetchWithPayment(fetch, account);
     const decodedPayment = paymentHeader ? decodeXPaymentResponse(paymentHeader) : null;
 
     res.status(200).json({
-      message: '✅ Bounty answered with payment',
+      message: ' Bounty answered with payment',
       bounty: data,
       paymentDetails: decodedPayment,
     });
   } catch (error: any) {
-    console.error('❌ Payment or creation failed:', error);
+    console.error(' Payment or creation failed:', error);
     res.status(500).json({ error: error.message || 'Unknown error occurred' });
   }
 });

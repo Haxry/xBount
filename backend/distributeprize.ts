@@ -19,7 +19,7 @@ const cdp = new CdpClient({
 
 router.post('/prize/:amount', async (req, res) => {
    const { amount } = req.params;
-   const parsedAmount = parseUnits(amount, 6); // Assuming USDC has 6 decimals
+   const parsedAmount = parseUnits(amount, 6); 
     const sender = await cdp.evm.getOrCreateAccount({ name: "haxry" });
 const receiver = await cdp.evm.getOrCreateAccount({ name: "Alice" });
 const { transactionHash } = await sender.transfer({

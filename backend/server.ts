@@ -126,8 +126,8 @@ const mongoURI =process.env.MONGO_URI ;
 
 
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+  .then(() => console.log(' MongoDB connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 
 const SolutionSchema = new mongoose.Schema({
@@ -184,7 +184,7 @@ app.post('/question', async (req, res) => {
       exact.evm.decodePayment(req.header("X-PAYMENT")!),
       paymentRequirements[0],
     );
-    console.log("✅ Payment settled:", settleResponse);
+    console.log(" Payment settled:", settleResponse);
     const responseHeader = settleResponseHeader(settleResponse);
     res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
 
@@ -316,7 +316,7 @@ app.post('/ask', async (req, res) => {
         headers: {
           'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'http://localhost:4000', // required by OpenRouter
+          'HTTP-Referer': 'http://localhost:4000', 
         },
       }
     );

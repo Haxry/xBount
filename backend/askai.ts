@@ -25,7 +25,7 @@ const fetchWithPayment = wrapFetchWithPayment(fetch, account);
     prompt
   };
 
-  const url = 'http://localhost:3000/ask'; // This should be a verified-payable endpoint
+  const url = 'http://localhost:3000/ask';
 
   try {
     const response = await fetchWithPayment(url, {
@@ -42,12 +42,12 @@ const fetchWithPayment = wrapFetchWithPayment(fetch, account);
     const decodedPayment = paymentHeader ? decodeXPaymentResponse(paymentHeader) : null;
 
     res.status(200).json({
-      message: '✅ AI query successful with payment',
+      message: ' AI query successful with payment',
       bounty: data,
       paymentDetails: decodedPayment,
     });
   } catch (error: any) {
-    console.error('❌ Payment or creation failed:', error);
+    console.error(' Payment or creation failed:', error);
     res.status(500).json({ error: error.message || 'Unknown error occurred' });
   }
 });
