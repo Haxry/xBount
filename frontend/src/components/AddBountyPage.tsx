@@ -39,7 +39,7 @@ export const AddBountyPage = ({ onBack }) => {
   });
   
   const data = await res.json();
-  console.log("✅ Bounty created with payment:", data);
+  console.log(" Bounty created with payment:", data);
   setPaymentStatus(data.paymentDetails);
   } catch (err) {
     console.error("❌ Payment or creation failed:", err);

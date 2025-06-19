@@ -68,13 +68,7 @@ function createExactPaymentRequirements(
   };
 }
 
-/**
- * Verifies a payment and handles the response
- *
- * @param req - The Express request object
- * @param res - The Express response object
- * @param paymentRequirements - The payment requirements to verify against
- * @returns A promise that resolves to true if payment is valid, false otherwise
+
  */
 async function verifyPayment(
   req: express.Request,
@@ -130,7 +124,7 @@ async function verifyPayment(
 
 const mongoURI =process.env.MONGO_URI ;
 
-// Connect to MongoDB
+
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('✅ MongoDB connected'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
@@ -172,8 +166,8 @@ app.post('/question', async (req, res) => {
 
     console.log("verifying payment");
     const isValid = await verifyPayment(req, res, paymentRequirements);
-    console.log("✅ Payment valid?", isValid);
-    //move it after the settle call
+    console.log(" Payment valid?", isValid);
+    
     if (!isValid) return;
        const newBounty = new Bounty({
       title,
@@ -223,14 +217,14 @@ app.post('/answer/:bountyId', async (req, res) => {
 
     console.log("verifying payment");
     const isValid = await verifyPayment(req, res, paymentRequirements);
-    console.log("✅ Payment valid?", isValid);
+    console.log(" Payment valid?", isValid);
     if (!isValid) return;
     try {
       const settleResponse = await settle(
       exact.evm.decodePayment(req.header("X-PAYMENT")!),
       paymentRequirements[0],
     );
-    console.log("✅ Payment settled:", settleResponse);
+    console.log(" Payment settled:", settleResponse);
     const responseHeader = settleResponseHeader(settleResponse);
     res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
 
@@ -302,14 +296,14 @@ app.post('/ask', async (req, res) => {
 
     console.log("verifying payment");
     const isValid = await verifyPayment(req, res, paymentRequirements);
-    console.log("✅ Payment valid?", isValid);
+    console.log(" Payment valid?", isValid);
     if (!isValid) return;
     try {
       const settleResponse = await settle(
       exact.evm.decodePayment(req.header("X-PAYMENT")!),
       paymentRequirements[0],
     );
-    console.log("✅ Payment settled:", settleResponse);
+    console.log(" Payment settled:", settleResponse);
     const responseHeader = settleResponseHeader(settleResponse);
     res.setHeader("X-PAYMENT-RESPONSE", responseHeader);
     const response = await axios.post(
@@ -339,5 +333,5 @@ app.post('/ask', async (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(` Server running on http://localhost:${PORT}`);
 });

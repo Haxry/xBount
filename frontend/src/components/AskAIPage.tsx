@@ -117,9 +117,9 @@ export const AskAIPage = ({ onBack }) => {
       });
 
       const data = await res.json();
-      console.log("✅ agent responded with", data);
-      console.log("✅ answer", data.bounty.response);
-      console.log("✅ payment details", data.paymentDetails);
+      console.log(" agent responded with", data);
+      console.log(" answer", data.bounty.response);
+      console.log(" payment details", data.paymentDetails);
         
       const agentMessage = {
         id: messages.length + 2,

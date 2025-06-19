@@ -32,7 +32,7 @@ export const SolveModal = ({ isOpen, onClose, bountyId }) => {
     }),
   });
   const data = await res.json();
-  console.log("✅ Bounty created with payment:", data);
+  console.log(" Bounty created with payment:", data);
   setResponse(data);
   setPaymentStatus(data.paymentDetails);
   } catch (err) {
