@@ -39,7 +39,7 @@ XBount reimagines community collaboration by merging bounties, AI assistance, an
 ## x402 integration 
 you can see the code using the x402 protocol [here](https://github.com/Haxry/xBount/blob/master/backend/server.ts) 
 . Below is a sample code from the backend for the question route which uses x402 for accepting payment(ie the bounty price )
-```rust
+```typescript
 app.post('/question', async (req, res) => {
   
     const { title, description, price, submittedBy } = req.body;
@@ -91,7 +91,7 @@ similarly x402 is used for other operations such as submitting an answer to a bo
 
 ## cdp wallet api integration 
 The cdp wallet api is used to manage account for the user , user dont have to sign anything manually , below is an example code , that shows how the cdp wallet api handles the payment whenever user posts an aswer to a bounty 
-```rust
+```typescript
 const cdp = new CdpClient({
     apiKeyId: CDP_API_KEY_ID,
     apiKeySecret: CDP_API_KEY_SECRET,
@@ -148,7 +148,7 @@ git clone https://github.com/Haxry/xBount.git
 cd xBount
 ```
 Add an env file with the following required variables
-```env
+```
 FACILITATOR_URL= // to confirm the x402 payments
 NETWORK= // the chain where you want to transact
 CDP_API_KEY_ID= // required for cdp wallet api
